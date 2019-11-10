@@ -9,15 +9,24 @@ class AjaxRequest{
         this.queue={}
     }
     //拦截器
-    setInterceptor(instance){
+    setInterceptor(instance,url){
       instance.interceptors.response.use((res)=>{
-        store.commit('hideLodding')
+
+        //loadding 必须要做逻辑，同页面多个接口时保持第一个显示，和全部接口结束后消失
+        if( Object.keys(this.queue).length==0){
+          
+            store.commit('hideLodding')
+        }
+          this.queue[url]=url
           return res.data
       }),
 
       instance.interceptors.request.use((config)=>{
          //请求拦截一般设置 token
-         store.commit('isshowLodding')
+         delete this.queue[url]
+         if( Object.keys(this.queue).length==0){        
+          store.commit('isshowLodding')
+         }     
           config.headers.Authorization=getLocal('token')
           return config
       })
@@ -28,7 +37,7 @@ class AjaxRequest{
     }
     request(options){
         let instance = axios.create()
-        this.setInterceptor(instance)
+        this.setInterceptor(instance,options.url)
         let config=this.merge(options)
         return instance(config)
     }
