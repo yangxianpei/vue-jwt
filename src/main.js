@@ -5,7 +5,12 @@ import store from './store'
 import iView from 'iview';
 import 'iview/dist/styles/iview.css';
 Vue.config.productionTip = false
+
+let whiteList=['/xxx']
 router.beforeEach(async (to,from,next)=>{
+  if(whiteList.includes(to.path)){
+    return next()
+  }
   let islogin = await store.dispatch('validata')
   let needValidata = to.matched.some(match => match.meta.validata)
   console.dir(to)
